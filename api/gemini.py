@@ -1,5 +1,4 @@
 import json
-import base64
 import google.generativeai as genai
 import os
 
@@ -17,34 +16,31 @@ def handler(request):
     API_KEY = os.getenv("GEMINI_API_KEY")
     genai.configure(api_key=API_KEY)
 
-    # TEXT GENERATION
+    # TEXT MODE
     if mode == "text":
         model = genai.GenerativeModel("gemini-2.5-flash")
-        result = model.generate_content(prompt)
+        response = model.generate_content(prompt)
 
         return {
             "statusCode": 200,
             "body": json.dumps({
                 "success": True,
-                "response": result.text
+                "response": response.text
             })
         }
 
-    # IMAGE GENERATION
+    # IMAGE MODE
     if mode == "image":
         model = genai.GenerativeModel("gemini-2.5-flash")
-        img = model.generate_images(
-            prompt=prompt,
-            size="1024x1024"
-        )
+        result = model.generate_images(prompt=prompt, size="1024x1024")
 
-        image_b64 = img.images[0].image_bytes
+        img_b64 = result.images[0].image_bytes
 
         return {
             "statusCode": 200,
             "body": json.dumps({
                 "success": True,
-                "image_base64": image_b64
+                "image_base64": img_b64
             })
         }
 
