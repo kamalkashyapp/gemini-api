@@ -1,8 +1,5 @@
 {
-  "version": 2,
-  "builds": [
-    { "src": "api/gemini.py", "use": "vercel-python" }
-  ],
+  "version": 3,
   "routes": [
     { "src": "/api/gemini", "dest": "/api/gemini.py" }
   ]
