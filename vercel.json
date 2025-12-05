@@ -1,10 +1,5 @@
 {
   "version": 2,
-  "functions": {
-    "api/gemini.py": {
-      "runtime": "python3.11"
-    }
-  },
   "routes": [
     { "src": "/api/gemini", "dest": "/api/gemini.py" }
   ]
