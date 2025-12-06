@@ -3,50 +3,55 @@ import google.generativeai as genai
 import os
 
 def handler(request):
-    # Vercel Python request structure
-    query = request.get("query", {})
-    mode = query.get("mode", "text")
-    prompt = query.get("prompt")
+    try:
+        query = request.get("query", {})
+        mode = query.get("mode", "text")
+        prompt = query.get("prompt", None)
+    except:
+        return {
+            "statusCode": 400,
+            "headers": {"Content-Type": "application/json"},
+            "body": json.dumps({"error": "Invalid request format"})
+        }
 
     if not prompt:
         return {
             "statusCode": 400,
+            "headers": {"Content-Type": "application/json"},
             "body": json.dumps({"error": "Prompt required"})
         }
 
-    # Configure Gemini
     API_KEY = os.getenv("GEMINI_API_KEY")
     genai.configure(api_key=API_KEY)
 
-    # TEXT MODE
+    # TEXT MODE ONLY (SAFE)
     if mode == "text":
-        model = genai.GenerativeModel("gemini-2.5-flash")
-        output = model.generate_content(prompt)
+        try:
+            model = genai.GenerativeModel("gemini-2.5-flash")
+            result = model.generate_content(prompt)
 
-        return {
-            "statusCode": 200,
-            "headers": { "Content-Type": "application/json" },
-            "body": json.dumps({
-                "success": True,
-                "response": output.text
-            })
-        }
+            return {
+                "statusCode": 200,
+                "headers": {"Content-Type": "application/json"},
+                "body": json.dumps({
+                    "success": True,
+                    "response": result.text
+                })
+            }
 
-    # IMAGE MODE
-    if mode == "image":
-        model = genai.GenerativeModel("gemini-2.5-flash")
-        img = model.generate_images(prompt=prompt, size="1024x1024")
+        except Exception as e:
+            return {
+                "statusCode": 500,
+                "headers": {"Content-Type": "application/json"},
+                "body": json.dumps({
+                    "error": "Gemini text generation failed",
+                    "details": str(e)
+                })
+            }
 
-        return {
-            "statusCode": 200,
-            "headers": { "Content-Type": "application/json" },
-            "body": json.dumps({
-                "success": True,
-                "image_base64": img.images[0].image_bytes
-            })
-        }
-
+    # INVALID MODE
     return {
         "statusCode": 400,
-        "body": json.dumps({"error": "Invalid mode"})
+        "headers": {"Content-Type": "application/json"},
+        "body": json.dumps({"error": "Invalid mode (only text supported)"})
         }
